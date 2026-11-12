@@ -1,0 +1,32 @@
+<!doctype html><meta charset=utf-8><meta http-equiv=Content-Security-Policy content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"><link rel=stylesheet href=app.css>
+<style>
+.iw{padding:26px 40px 24px;gap:0;align-items:stretch;justify-content:flex-start}.iw .head{display:flex;align-items:center;gap:16px;margin-bottom:14px}.iw .head img{width:72px;height:72px;border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.5)}.iw .brand{font-size:34px;margin:0;line-height:1.05}
+.pane{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}.pane[hidden]{display:none}.pane h2{margin:0;font-size:22px}
+.box{padding:14px 18px;border-radius:16px}.box b{color:var(--ac,#b6f500)}.fld{display:flex;gap:10px;align-items:center}.fld .in{flex:1;min-width:0;opacity:1}.lbl2{font-weight:800;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.opt{display:flex;gap:14px;align-items:center;padding:12px 18px;cursor:pointer}.notes{max-height:96px;overflow:auto;white-space:pre-wrap;font-size:13px;color:var(--mut)}
+.big{font-size:56px;text-align:center;margin:6px 0;color:#b6f500}.sz{display:flex;justify-content:space-between;gap:12px;color:var(--tx);font-size:14px}.sz span:last-child{color:var(--mut)}.ibar{display:flex;gap:12px;justify-content:flex-end;margin-top:14px;padding:10px;border-radius:18px;background:rgba(10,13,22,.72);backdrop-filter:blur(10px);border:1px solid var(--line)}.ibar .btn{min-width:170px;justify-content:center}.ibar .btn[disabled]{background:#3a3f4b;color:#8b92a3;box-shadow:none;filter:none;opacity:.9}
+.spin2{width:34px;height:34px;border-radius:50%;border:4px solid rgba(255,255,255,.15);border-top-color:#b6f500;animation:sp .8s linear infinite;margin:30px auto 6px}@keyframes sp{to{transform:rotate(360deg)}}
+.lg{background:none;border:0;color:var(--mut);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
+</style>
+<div class="win iw lw"><div id=bg></div><button class="wbtn red" style="position:absolute;top:14px;right:14px;z-index:3" id=x1><i class=pi data-i=x></i></button>
+<div class=head><img src=assets/app-icon.png alt=""><div><div class=brand>Totem<b>Launcher</b></div><div class=mut id=sub>Установщик</div></div></div>
+
+<div class=pane id=pInit><div class=spin2></div><p class=mut style="text-align:center">Проверяем последнюю версию на GitHub…</p></div>
+
+<div class=pane id=pRepo hidden><h2>Откуда устанавливать?</h2><p class=mut>В этом установщике не указан репозиторий GitHub с лаунчером. Введите его один раз (например, <b>Ivan/TotemLauncher</b>).</p>
+<div class=fld><input class=in id=repoIn placeholder="владелец/название" maxlength=200></div><p class=err id=repoErr></p></div>
+
+<div class=pane id=pReady hidden><h2 id=rTitle>Установка</h2>
+<div class="glass box" id=rInfo></div><div class="notes glass box" id=rNotes hidden></div>
+<div><div class=lbl2>Папка установки</div><div class=fld style="margin-top:6px"><input class=in id=folder readonly><button class="btn ghost" id=browse><i class=pi data-i=folder></i>Обзор…</button></div></div></div>
+
+<div class=pane id=pBusy hidden><h2 id=bTitle>Установка…</h2><div class="glass box" style="padding:20px 22px"><div class=pr><b id=pct>0%</b><div class=track><i id=fill></i></div></div>
+<div class=sz style="margin-top:10px"><span id=st>Подготовка…</span><span id=sz></span></div></div></div>
+
+<div class=pane id=pDone hidden><div class="glass box" style="padding:22px"><div class=big>✔</div><h2 style="text-align:center" id=dTitle>Установка завершена</h2><p class=mut style="text-align:center;margin:8px 0 0;word-break:break-all" id=dInfo></p></div></div>
+
+<div class=pane id=pErr hidden><h2>Не получилось</h2><div class="glass box"><p id=eMsg class=err style="margin:0"></p></div></div>
+
+<label class="glass opt" id=optLaunch hidden><span class=sw><input type=checkbox id=cbLaunch checked><i></i></span>Запустить лаунчер после установки</label>
+<div class=ibar><button class="btn ghost" id=bCancel>Отмена</button><button class=btn id=bMain>Начать установку</button></div></div>
+<script src=icons.js></script><script src=bg.js></script><script src=installer.js></script>

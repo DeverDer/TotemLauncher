@@ -1,0 +1,47 @@
+{
+ "name": "totem-launcher",
+ "version": "0.15.0",
+ "description": "TotemLauncher",
+ "main": "src/main.js",
+ "scripts": {
+  "start": "electron .",
+  "test": "node tests/run-all.js",
+  "prep": "node scripts/prepare.js",
+  "build:app": "node scripts/build-app.js",
+  "build:installer": "node scripts/build-installer.js",
+  "dist": "node scripts/prepare.js && node scripts/build-app.js && node scripts/build-installer.js"
+ },
+ "devDependencies": {
+  "electron": "^33.2.0",
+  "electron-builder": "^25.1.8"
+ },
+ "build": {
+  "appId": "gg.totem.launcher",
+  "productName": "TotemLauncher",
+  "files": [
+   "src/**"
+  ],
+  "electronLanguages": [
+   "ru",
+   "en-US"
+  ],
+  "extraResources": [
+   {
+    "from": "build/icon.ico",
+    "to": "icon.ico"
+   }
+  ],
+  "win": {
+   "target": "dir",
+   "icon": "build/icon.png"
+  },
+  "directories": {
+   "buildResources": "build",
+   "output": "dist"
+  }
+ },
+ "dependencies": {
+  "adm-zip": "^0.5.16"
+ },
+ "author": "TotemLauncher"
+}

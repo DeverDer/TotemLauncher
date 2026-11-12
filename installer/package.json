@@ -1,0 +1,18 @@
+{
+ "name": "totem-installer",
+ "version": "1.0.0",
+ "description": "TotemLauncher Setup",
+ "main": "main.js",
+ "author": "TotemLauncher",
+ "scripts": { "start": "electron ." },
+ "devDependencies": { "electron": "^33.2.0", "electron-builder": "^25.1.8" },
+ "build": {
+  "appId": "gg.totem.launcher.setup",
+  "productName": "TotemLauncher Setup",
+  "files": ["main.js", "preload.js", "app-config.json", "ui/**", "lib/**"],
+  "electronLanguages": ["ru", "en-US"],
+  "win": { "target": "portable", "artifactName": "TotemLauncher-Setup.exe", "icon": "icon.png", "signAndEditExecutable": false },
+  "portable": { "requestExecutionLevel": "user" },
+  "directories": { "output": "../dist/installer" }
+ }
+}
