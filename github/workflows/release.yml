@@ -1,0 +1,59 @@
+name: Release
+
+# Как запустить:
+#  1) вкладка Actions → Release → Run workflow → введите тег, например v0.15.0 (самый простой способ);
+#  2) или отправьте тег командой:  git tag v0.15.0 && git push origin v0.15.0
+# Сборка занимает 10–15 минут. После неё на странице Releases появятся:
+#   TotemLauncher-Setup.exe, TotemLauncher-<версия>-win-x64.zip и .sha256
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Тег выпуска вида v1.2.3 (версия должна быть больше предыдущей)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm test
+
+  build:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - name: Версия берётся из тега
+        shell: bash
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VER="${TAG#v}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "Тег должен быть вида v1.2.3, а не $TAG"; exit 1; fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          npm version "$VER" --no-git-tag-version --allow-same-version
+      - run: npm ci
+      - name: Сборка лаунчера и установщика
+        shell: bash
+        env:
+          TOTEM_REPO: ${{ github.repository }}
+        run: npm run dist
+      - name: Публикация релиза
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "TotemLauncher $VER" --generate-notes
+          gh release upload "$TAG" "dist/TotemLauncher-$VER-win-x64.zip" "dist/TotemLauncher-$VER-win-x64.zip.sha256" "dist/installer/TotemLauncher-Setup.exe" --clobber
