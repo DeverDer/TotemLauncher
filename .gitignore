@@ -1,0 +1,12 @@
+node_modules/
+dist/
+# файлы установщика, которые создаёт scripts/prepare.js (копии из src/)
+installer/ui/app.css
+installer/ui/icons.js
+installer/ui/bg.js
+installer/ui/assets/
+installer/lib/
+installer/icon.png
+installer/app-config.json
+installer/node_modules/
+*.log
