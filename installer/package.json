@@ -11,7 +11,7 @@
   "productName": "TotemLauncher Setup",
   "files": ["main.js", "preload.js", "app-config.json", "ui/**", "lib/**"],
   "electronLanguages": ["ru", "en-US"],
-  "win": { "target": "portable", "artifactName": "TotemLauncher-Setup.exe", "icon": "icon.png", "signAndEditExecutable": false },
+  "win": { "target": "portable", "artifactName": "TotemLauncher-Setup.exe", "icon": "icon.png"},
   "portable": { "requestExecutionLevel": "user" },
   "directories": { "output": "../dist/installer" }
  }
