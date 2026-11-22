@@ -25,8 +25,12 @@ function semver(r, mc) { let unk = false;
   return unk ? null : false;
 }
 // true/false, либо null — если формат не распознан (тогда ошибку не показываем)
-function mcSatisfies(range, mc) { if (range == null || range === '') return null; if (Array.isArray(range)) { let unk = false; for (const x of range) { const v = mcSatisfies(x, mc); if (v === true) return true; if (v === null) unk = true; } return unk ? null : false; }
-  const s = String(range); return /[\[(]/.test(s) ? maven(s, mc) : semver(s, mc); }
+// opts.loose — «мягкий» режим для mcmod.info старых Forge-модов: там «1.12» означает «1.12.x», а не строго 1.12;
+// плейсхолдеры вроде ${mcversion} и @MCVERSION@ — неизвестно (null), а не ошибка
+function mcSatisfies(range, mc, opts = {}) { if (range == null || range === '') return null; if (Array.isArray(range)) { let unk = false; for (const x of range) { const v = mcSatisfies(x, mc, opts); if (v === true) return true; if (v === null) unk = true; } return unk ? null : false; }
+  const s = String(range).trim(); if (/\$\{|@[A-Z_]+@|^\s*$/.test(s)) return null;
+  if (opts.loose && !/[\[(<>~^|*xX]/.test(s)) { const list = s.split(/[,;\s]+/).filter(Boolean); let unk = false; for (const v of list) { if (!num(v)) { unk = true; continue; } if (prefix(mc, v)) return true; } return unk ? null : false; } // «1.12», «1.12.2», «1.11.2, 1.12»
+  return /[\[(]/.test(s) ? maven(s, mc) : semver(s, mc); }
 // ---------- ресурс-паки ----------
 const FMT = { 1: '1.8', 2: '1.9–1.10', 3: '1.11–1.12', 4: '1.13–1.14', 5: '1.15–1.16.1', 6: '1.16.2–1.16.5', 7: '1.17', 8: '1.18', 9: '1.19–1.19.2', 12: '1.19.3', 13: '1.19.4', 15: '1.20–1.20.1', 18: '1.20.2', 22: '1.20.3–1.20.4', 32: '1.20.5–1.20.6', 34: '1.21–1.21.1', 42: '1.21.2–1.21.3', 46: '1.21.4', 55: '1.21.5', 63: '1.21.6', 64: '1.21.7–1.21.8' };
 function packMeta(p) { // pack.mcmeta из папки или zip

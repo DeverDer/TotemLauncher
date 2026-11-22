@@ -1,0 +1,1 @@
+totem.onProgress(({ percent, stage, note, error }) => { f.style.width = percent + '%'; p.textContent = percent + '%'; s.textContent = stage || ''; if (note) t.textContent = note; if (error) { m.textContent = error; m.style.display = 'block'; } });

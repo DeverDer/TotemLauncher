@@ -10,6 +10,10 @@ const MAX_DL = 2 * 1024 ** 3, IDLE_MS = 30000;
 const MANIFEST = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json';
 const RUNTIMES = 'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Пауза загрузок (кнопка в окошке загрузок): новые файлы не начинаются, а текущие перестают читаться, пока паузу не снимут или не отменят загрузку
+const PAUSE = { on: false, ws: new Set() };
+const setPaused = (b) => { PAUSE.on = !!b; if (!PAUSE.on) { const w = [...PAUSE.ws]; PAUSE.ws.clear(); w.forEach((f) => f()); } };
+const gate = (signal) => new Promise((res) => { if (!PAUSE.on || signal?.aborted) return res(); const f = () => res(); PAUSE.ws.add(f); signal?.addEventListener('abort', () => { PAUSE.ws.delete(f); res(); }, { once: true }); });
 const archName = () => (process.arch === 'ia32' ? 'x86' : process.arch);
 
 async function getJson(url, signal) {
@@ -25,40 +29,44 @@ async function fileOk(t) {
 async function download(t, signal, onBytes) {
   httpsOnly(t.url); fs.mkdirSync(path.dirname(t.dest), { recursive: true });
   let last;
-  for (let a = 1; a <= 3; a++) {
+  for (let a = 1; a <= 5; a++) {
     const part = t.dest + '.part'; let got = 0, out, tm; const idle = new AbortController();
     const kick = () => { clearTimeout(tm); tm = setTimeout(() => idle.abort(new Error('нет данных 30 с')), IDLE_MS); }; // зависшее соединение не должно вешать загрузку навсегда
     try {
       kick(); const r = await fetch(t.url, { signal: signal ? AbortSignal.any([signal, idle.signal]) : idle.signal, headers: UA }); if (!r.ok) throw new Error('HTTP ' + r.status);
       if (r.url && !/^https:|^http:\/\/(127\.0\.0\.1|localhost)/.test(r.url)) throw new Error('Перенаправление на небезопасный адрес'); // редирект на http отклоняем
       const cap = t.size != null ? t.size + 1024 : MAX_DL, h = crypto.createHash('sha1'); out = fs.createWriteStream(part); let werr = null; out.on('error', (e) => { werr = e; }); // без обработчика отмена роняла процесс (запись в уничтоженный поток)
-      for await (const c of Readable.fromWeb(r.body)) { kick(); if (werr) throw werr; got += c.length; if (got > cap) throw new Error('файл больше ожидаемого размера'); h.update(c); onBytes(c.length); if (!out.write(c)) await new Promise((x) => out.once('drain', x)); }
+      for await (const c of Readable.fromWeb(r.body)) { if (PAUSE.on) { clearTimeout(tm); await gate(signal); if (signal?.aborted) throw new Error('cancelled'); } kick(); if (werr) throw werr; got += c.length; if (got > cap) throw new Error('файл больше ожидаемого размера'); h.update(c); onBytes(c.length); if (!out.write(c)) await new Promise((x) => out.once('drain', x)); }
       await new Promise((res, rej) => out.end((e) => (e || werr ? rej(e || werr) : res())));
       if (t.sha1 && h.digest('hex') !== t.sha1) throw new Error('sha1 не совпал');
       clearTimeout(tm); fs.renameSync(part, t.dest); return;
     } catch (e) {
-      clearTimeout(tm); onBytes(-got); out?.destroy(); try { fs.unlinkSync(part); } catch {}
-      if (signal?.aborted) throw new Error('cancelled'); last = e; await sleep(500 * a);
+      clearTimeout(tm); onBytes(-got); if (out) { const closed = new Promise((r) => out.once('close', r)); out.destroy(); await Promise.race([closed, sleep(500)]); } try { fs.unlinkSync(part); } catch {} // ждём закрытия файла: иначе .part мог появиться уже после удаления
+      if (signal?.aborted) throw new Error('cancelled'); last = e; await sleep(/HTTP (429|5\d\d)/.test(e.message) ? 1500 * a : 500 * a);
     }
   }
   const code = last.cause?.code || '', net = !!code || last.name === 'TypeError' || last.name === 'TimeoutError' || /нет данных/.test(last.message), e = new Error(`Не удалось скачать ${t.label || t.url}: ${net ? 'сеть не отвечает' + (code ? ` (${code})` : '') : last.message}`); e.net = net; throw e;
 }
+const isCancelErr = (e) => e?.message === 'cancelled' || e?.name === 'AbortError';
 async function runTasks(tasks, signal, report) {
   const total = tasks.reduce((s, t) => s + (t.size || 0), 0), q = [...tasks], t0 = Date.now(), ac = new AbortController();
   if (signal.aborted) ac.abort(); else signal.addEventListener('abort', () => ac.abort());
-  let done = 0, net = 0;
-  const emit = (op) => { if (!ac.signal.aborted) report({ done, total, speed: net / Math.max((Date.now() - t0) / 1000, 0.5), op }); };
+  let done = 0, net = 0, files = 0, firstErr = null; const filesTotal = tasks.length; // files / filesTotal — «5/87 файлов» в окошке загрузок
+  const emit = (op) => { if (!ac.signal.aborted) report({ done, total, speed: net / Math.max((Date.now() - t0) / 1000, 0.5), op, files, filesTotal }); };
   const worker = async () => {
     try {
       for (let t; (t = q.shift());) {
+        if (PAUSE.on) { await gate(ac.signal); }
         if (ac.signal.aborted) throw new Error('cancelled');
         if (await fileOk(t)) done += t.size || 0; else await download(t, ac.signal, (n) => { done += n; net += n; emit(t.label); });
         if (t.exec) try { fs.chmodSync(t.dest, 0o755); } catch {}
-        emit(t.label);
+        files++; emit(t.label);
       }
-    } catch (e) { ac.abort(); throw e; }
+    } catch (e) { if (!firstErr && !isCancelErr(e)) firstErr = e; ac.abort(); throw e; } // соседние потоки после ac.abort() кидают «cancelled» — запоминаем настоящую причину
   };
   const res = await Promise.allSettled(Array.from({ length: 12 }, worker)); // ждём все потоки, чтобы после отмены ничего не писало в интерфейс
+  if (signal.aborted) throw new Error('cancelled'); // отменил игрок
+  if (firstErr) throw firstErr; // настоящая ошибка (сеть, sha1 …), а не «cancelled» соседнего потока
   const bad = res.find((r) => r.status === 'rejected'); if (bad) throw bad.reason;
 }
 // Правила Mojang (os/arch/features). features не поддерживаем -> такие правила не срабатывают.
@@ -126,6 +134,31 @@ async function neoInstaller(lv, signal) {
 // id версии, которую создал установщик (у старых Forge имена вида 1.12.2-forge1.12.2-14.23.5.2860)
 function findLoaderVersion(dirs, loader, mc, lv) {
   try { return fs.readdirSync(dirs.versions).find((n) => fs.existsSync(path.join(dirs.versions, n, n + '.json')) && (loader === 'forge' ? n.toLowerCase().includes('forge') && n.includes(lv) && n.includes(mc) : n === 'neoforge-' + lv)) || null; } catch { return null; }
+}
+// ---- Повторное использование уже скачанных Forge/Fabric ----
+// Если для этой версии Minecraft загрузчик такого типа уже стоит (на любой сборке) — второй раз не качаем.
+// Исключение — вышла новая версия загрузчика: сборка, созданная с ней, получает её.
+const vnum = (s) => String(s).split(/[.+_-]/).map((x) => parseInt(x, 10)).map((n) => (Number.isFinite(n) ? n : 0));
+const vcmp = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; } return 0; };
+const neoPrefix = (mc) => { const y = /^(2\d)\.(\d+)(?:\.\d+)?$/.exec(mc), m = y || /^1\.(\d+)(?:\.(\d+))?$/.exec(mc); return m ? `${m[1]}.${m[2] || 0}.` : null; };
+function localLoaders(dirs, loader, mc) { // версии загрузчика этого типа, уже установленные для mc
+  let names; try { names = fs.readdirSync(dirs.versions).filter((n) => fs.existsSync(path.join(dirs.versions, n, n + '.json'))); } catch { return []; }
+  const out = [], low = (n) => n.toLowerCase();
+  for (const n of names) {
+    if (loader === 'fabric') { if (n.startsWith('fabric-loader-') && n.endsWith('-' + mc) && n.length > 14 + mc.length + 1) out.push(n.slice(14, -(mc.length + 1))); }
+    else if (loader === 'forge') { if (low(n).includes('forge') && !low(n).includes('neoforge') && n.startsWith(mc + '-')) { const m = /(\d+(?:\.\d+)+)$/.exec(n); if (m) out.push(m[1]); } }
+    else if (loader === 'neoforge') { const p = neoPrefix(mc); if (p && n.startsWith('neoforge-' + p)) out.push(n.slice(9)); }
+  }
+  return [...new Set(out)];
+}
+async function pickLoader(loader, mc, pinned, dirs, signal) { // → { lv, installed }
+  const loc = localLoaders(dirs, loader, mc).sort(vcmp), best = loc[loc.length - 1];
+  if (pinned && loc.includes(pinned)) return { lv: pinned, installed: true };
+  let want = pinned || '';
+  if (!want) { try { want = await Promise.race([loaderLatest(loader, mc, signal), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 7000))]); } catch (e) { if (signal?.aborted) throw e; if (!best) throw e; want = ''; } }
+  if (best && (!want || vcmp(want, best) <= 0)) return { lv: best, installed: true }; // такая (или более новая) версия уже скачана
+  if (want) return { lv: want, installed: false }; // новая версия загрузчика — ставим
+  throw new Error(`Не удалось узнать версию ${loader} для Minecraft ${mc}: проверьте интернет`);
 }
 async function plan(id, dirs, S, signal, fast = false) {
   if (!SAFE_ID.test(String(id))) throw new Error('Недопустимый идентификатор версии');
@@ -208,6 +241,9 @@ function buildArgs(c) {
   if (c.vj.arguments) { jvm = flat(c.vj.arguments.jvm || []); game = flat(c.vj.arguments.game || []); }
   else { jvm = ['-Djava.library.path=${natives_directory}', '-cp', '${classpath}']; game = c.vj.minecraftArguments.split(' '); }
   jvm = jvm.map(sub); game = game.map(sub);
+  // Forge/NeoForge 1.17+: BootstrapLauncher делает модули из ВСЕХ jar в classpath, кроме перечисленных в -DignoreList. Там стоит «${version_name}.jar» (id Forge), а в classpath лежит ванильный клиент <версия>.jar —
+  // без этой добавки он становится вторым модулем «_1._20._1» рядом с «minecraft» и игра падает с ResolutionException. Добавляем имя клиентского jar в список игнорируемых.
+  const cj = c.cp?.length ? path.basename(String(c.cp[c.cp.length - 1])) : ''; if (/\.jar$/i.test(cj)) jvm = jvm.map((a) => (/^-DignoreList=/.test(a) && !a.split(',').includes(cj) ? a + ',' + cj : a));
   if (c.logArg) jvm.push(c.logArg);
   if (c.auth?.agent) jvm.unshift(`-javaagent:${c.auth.agent.jar}=${c.auth.agent.url}`); // Ely.by: authlib-injector
   const sp = (s) => (s || '').trim().split(/\s+/).filter(Boolean);
@@ -221,6 +257,7 @@ function buildArgs(c) {
 const splitRam = (total, n) => Math.max(1024, Math.floor(total / Math.max(1, n)));
 const LIVE = ['preparing', 'downloading', 'installing', 'launching', 'playing'];
 
+const Deps = require('./deps'), Diag = require('./diag'), OptSync = require('./optsync');
 class Game {
   constructor(root, getSettings, emit, log, getAuth, emitWins) {
     this.getAuth = getAuth || (async () => null);
@@ -275,7 +312,8 @@ class Game {
   }
   // Forge/NeoForge: официальный установщик (--installClient) после установки ванильной версии
   async installLoader(inst, S, ctx = this) {
-    const d = this.dirs, sig = ctx.ac.signal, lv = inst.loaderVersion, f = inst.loader === 'forge';
+    const d = this.dirs, sig = ctx.ac.signal, f = inst.loader === 'forge';
+    const lv = (await pickLoader(inst.loader, inst.mc, inst.loaderVersion, d, sig)).lv;
     if (!/^[\w.+-]+$/.test(lv || '')) throw new Error('Неверная версия загрузчика');
     const name = f ? 'Forge' : 'NeoForge'; let vid = findLoaderVersion(d, inst.loader, inst.mc, lv); if (vid) return vid;
     ctx.set('preparing', { op: 'Подготовка Minecraft ' + inst.mc });
@@ -311,7 +349,7 @@ class Game {
       if (primary) this.meta = { name: S.playerName, ver: inst?.mc || id, label: `${S.playerName} · ${inst?.name || id}`, ram: S.ram, since: 0 };
       const gameDir = inst?.dir || d.game, rel = await this._lock(ctx); let vid, p, fast, ndir, assetsRoot;
       try {
-        vid = inst?.loader === 'fabric' ? await fabricProfile(inst.mc, inst.loaderVersion, d, ctx.ac.signal) : inst?.loader === 'forge' || inst?.loader === 'neoforge' ? await this.installLoader(inst, S, ctx) : id;
+        vid = inst?.loader === 'fabric' ? await fabricProfile(inst.mc, (await pickLoader('fabric', inst.mc, inst.loaderVersion, d, ctx.ac.signal)).lv, d, ctx.ac.signal) : inst?.loader === 'forge' || inst?.loader === 'neoforge' ? await this.installLoader(inst, S, ctx) : id;
         p = null; const marker = path.join(d.versions, vid, '.installed');
         if (launch && fs.existsSync(marker)) { try { p = await plan(vid, d, S, ctx.ac.signal, true); } catch (e) { this.log('быстрый запуск недоступен: ' + e.message); } } // установлено один раз — дальше сразу запуск
         fast = !!p;
@@ -335,25 +373,33 @@ class Game {
       fs.mkdirSync(path.join(this.root, '..', 'logs'), { recursive: true });
       const lf = fs.createWriteStream(path.join(this.root, '..', 'logs', opt.logName || 'game.log')); let tail = '';
       const jw = path.join(path.dirname(p.javaBin), 'javaw.exe'), exe = fs.existsSync(jw) ? jw : p.javaBin; // javaw: без консоли; windowsHide не ставим — иначе окно игры может создаться скрытым
-      const skinDir = path.join(this.root, '..', 'skin-active');
+      const skinDir = path.join(this.root, '..', 'skin-active'), dataDir = path.join(this.root, '..'), omc = OptSync.mcOf(inst, id), shareOpt = S.sharedOptions !== false;
+      if (shareOpt) { try { OptSync.pull(gameDir, omc, dataDir); } catch (e) { this.log('options: ' + e.message); } } // общие настройки игры из других сборок (до скина: он дописывает свою строку ресурс-паков)
       if (opt.hasSkin) { // дополнительное окно: свой скин в отдельном ресурс-паке (TotemSkin-N.zip), чтобы не трогать файлы первого окна
         try { if (opt.skin && S.skinInGame !== false && !auth?.agent) { const dir = path.join(this.root, '..', 'skin-win-' + ctx.n); fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(path.join(dir, 'wide.png'), opt.skin.wide); fs.writeFileSync(path.join(dir, 'slim.png'), opt.skin.slim); applySkin(gameDir, id, dir, true, opt.packId); } else applySkin(gameDir, id, '', false, opt.packId); } catch (e) { this.log('skin: ' + e.message); }
       } else if (S.skinInGame !== false) { try { applySkin(gameDir, id, skinDir, true); } catch (e) { this.log('skin: ' + e.message); } } else { try { applySkin(gameDir, id, '', false); } catch {} }
-      ctx.stopping = false; const proc = (ctx.proc = spawn(exe, args, { cwd: gameDir }));
-      const on = (b) => { lf.write(b); tail = (tail + b).slice(-3000); }; proc.stdout.on('data', on); proc.stderr.on('data', on);
+      ctx.stopping = false; const startedAt = Date.now(), proc = (ctx.proc = spawn(exe, args, { cwd: gameDir }));
+      const on = (b) => { lf.write(b); tail = (tail + b).slice(-40000); }; proc.stdout.on('data', on); proc.stderr.on('data', on);
       proc.once('spawn', () => { ctx.setMeta({ since: Date.now() }); ctx.set('playing'); });
       proc.once('error', (e) => { ctx.proc = null; ctx.set('error', { error: 'Не удалось запустить Java: ' + e.message }); opt.done?.(); });
-      proc.once('exit', (c) => { ctx.proc = null; lf.end(); const code = c == null ? 0 : c | 0, stopped = ctx.stopping; ctx.stopping = false;
-        if (code === 0 || stopped) { ctx.set('idle'); return opt.done?.(); }
+      proc.once('exit', (c) => { ctx.proc = null; lf.end(); if (shareOpt) { try { OptSync.push(gameDir, omc, dataDir); } catch (e) { this.log('options: ' + e.message); } } // что настроили в игре, становится общим для всех сборок
+        const code = c == null ? 0 : c | 0, stopped = ctx.stopping; ctx.stopping = false;
+        // игра закрылась (в том числе окном ошибки загрузки модов): читаем консоль и журнал — не хватило ли каких-то модов-зависимостей
+        let dep = []; if (primary && inst?.id && !stopped) { try { dep = Deps.scan({ gameDir, tail, since: startedAt }); } catch (e) { this.log('deps: ' + e.message); } }
+        const depInfo = dep.length ? { inst: inst.id, mc: inst.mc, loader: inst.loader, list: dep } : null; if (depInfo) this.log('не хватает модов: ' + dep.map((x) => x.id).join(', '));
+        if (code === 0 || stopped) { ctx.set('idle', depInfo ? { deps: depInfo } : {}); return opt.done?.(); }
         let lines = tail.trim().split(/\r?\n/).slice(-5).join(' | '); if (!lines) { try { lines = fs.readFileSync(path.join(gameDir, 'logs', 'latest.log'), 'utf8').trim().split(/\r?\n/).slice(-5).join(' | '); } catch {} }
+        let diag = null; if (primary && inst?.id && !stopped && !depInfo) { try { diag = Diag.analyze({ gameDir, tail, since: startedAt, code, inst: { ...inst, dir: gameDir }, S }); if (diag) { diag.inst = inst.id; this.log(`диагностика: ${diag.id} — ${diag.title}`); } } catch (e) { this.log('diag: ' + e.message); } }
         const cm = /Crash report saved to:\s*(?:#@!@#\s*)?(.+?\.txt)/.exec(tail), why = cm ? crashSummary(cm[1].trim()) : '';
-        this.log(`game exit ${code}: ${why || lines}`); ctx.set('error', { error: `Игра завершилась с кодом ${code}. ${why || lines.slice(-350)}` }); opt.done?.(); });
+        this.log(`game exit ${code}: ${why || lines}`); ctx.set('error', { ...(diag ? { diag } : {}), error: diag ? `${diag.short || diag.title}. ${diag.text}`.slice(0, 400) : depInfo ? 'Игре не хватает модов: ' + dep.map((x) => x.id).slice(0, 6).join(', ') + (dep.length > 6 ? '…' : '') : `Игра завершилась с кодом ${code}. ${why || lines.slice(-350)}`, ...(depInfo ? { deps: depInfo } : {}) });
+        if (primary) try { this.onFail?.({ code, gameDir, inst, id: vid, tail, why, ram: S.ram, label: ctx.label || ctx.meta?.label || '', logFile: path.join(this.root, '..', 'logs', opt.logName || 'game.log') }); } catch (e) { this.log('onFail: ' + e.message); } // журнал ошибок: подробный разбор причины — отдельно и асинхронно
+        opt.done?.(); });
     } catch (e) {
       this.log('game error: ' + (e.stack || e));
-      ctx.ac.signal.aborted ? ctx.set('idle') : ctx.set('error', { error: e.message }); opt.done?.();
+      ctx.ac.signal.aborted ? ctx.set('idle') : ctx.set('error', { error: e.message === 'cancelled' ? 'Загрузка прервана из-за сбоя сети. Нажмите «Играть» ещё раз — уже скачанное повторно качаться не будет.' : e.message }); opt.done?.(); // «cancelled» без нажатия отмены больше не показываем
     }
   }
 }
-Game.fabricLatest = fabricLatest; Game.loaderLatest = loaderLatest; Game.badJvm = badJvm;
+Game.setPaused = setPaused; Game.fabricLatest = fabricLatest; Game.loaderLatest = loaderLatest; Game.pickLoader = pickLoader; Game.localLoaders = localLoaders; Game.badJvm = badJvm;
 module.exports = Game;
-module.exports._t = { within, SAFE_ID, badJvm, httpsOnly, splitRam, crashSummary, extractNatives, findLoaderVersion, forgeInstaller, loaderLatest, plan, merge, allowed, buildArgs, offlineUuid, download, runTasks, sha1File };
+module.exports._t = { pickLoader, localLoaders, vcmp, within, SAFE_ID, badJvm, httpsOnly, splitRam, crashSummary, extractNatives, findLoaderVersion, forgeInstaller, loaderLatest, plan, merge, allowed, buildArgs, offlineUuid, download, runTasks, sha1File, setPaused, PAUSE };

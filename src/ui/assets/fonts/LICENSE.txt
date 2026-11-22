@@ -1,0 +1,2 @@
+Lora — Copyright 2011 The Lora Project Authors. Licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+Файлы lora*.woff2 — подмножество (латиница + кириллица) оригинальных шрифтов.

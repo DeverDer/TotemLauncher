@@ -1,67 +1,147 @@
-<!doctype html><meta charset=utf-8><meta http-equiv=Content-Security-Policy content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file: https://cdn.modrinth.com https://media.forgecdn.net https://*.forgecdn.net https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"><link rel=stylesheet href=app.css>
+<!doctype html><meta charset=utf-8><meta http-equiv=Content-Security-Policy content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: file: https://cdn.modrinth.com https://media.forgecdn.net https://*.forgecdn.net https://avatars.githubusercontent.com https://launchercontent.mojang.com https://www.minecraft.net https://minecraft.net https://*.minecraft.net; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"><link rel=stylesheet href=app.css>
 
 <div class=win id=win><div id=bg></div>
-<header><div class=brand><img src=assets/app-icon.png alt="">Totem<b>Launcher</b></div><nav class=tabs id=tabs><i class=ind id=ind></i><button class="tab on" data-p=home><i class=pi data-i=home></i>Главная</button><button class="tab" data-p=dl><i class=pi data-i=dl></i>Загрузки</button><button class="tab" data-p=bl><i class=pi data-i=layers></i>Сборки</button><button class="tab" data-p=sk><i class=pi data-i=user></i>Скин</button><button class="tab" data-p=st><i class=pi data-i=gear></i>Настройки</button></nav>
+<header><div class=brand><span class=bico><img src=assets/totem.png alt=""></span><span class=bname>Totem <b>Launcher</b></span></div><span class="vsep big"></span><nav class=tabs id=tabs><button class="tab on" data-p=home><i class=pi data-i=home></i><span class=tl><span class=tt><b>Главная</b></span></span></button><button class="tab" data-p=dl><i class=pi data-i=dl></i><span class=tl><span class=tt><b>Загрузки</b></span></span></button><button class="tab" data-p=bl><i class=pi data-i=layers></i><span class=tl><span class=tt><b>Сборки</b></span></span></button><button class="tab" data-p=cat><i class=pi data-i=catalog></i><span class=tl><span class=tt><b>Каталог</b></span></span></button><button class="tab" data-p=sk><i class=pi data-i=steve></i><span class=tl><span class=tt><b>Скин</b></span></span></button><button class="tab" data-p=st><i class=pi data-i=gear></i><span class=tl><span class=tt><b>Настройки</b></span></span></button></nav>
 <div class=hr><div class=acc id=acc><button class=pill id=accb><span id=accn>Игрок</span><i class=pi data-i=chev></i></button><div class=menu id=accm></div></div><span class=vsep></span>
-<button class=wbtn id=wmin title="Свернуть"><i class=pi data-i=min></i></button><button class="wbtn red" id=wclose title="Закрыть"><i class=pi data-i=x></i></button></div></header>
+<button class=wbtn id=wmin title="Свернуть"><i class=pi data-i=min></i></button><button class=wbtn id=wmax title="На весь экран"><i class=pi data-i=max></i></button><button class="wbtn red" id=wclose title="Закрыть"><i class=pi data-i=x></i></button></div></header>
 <main>
 <section class="page on" id=p-home><div class=hero><div class=left>
-<div class=wel><i class=barv></i><img class=wtotem src=assets/totem.png alt=""><div><h1>Добро пожаловать<br>в <b>TotemLauncher</b>!</h1><p>Запускай Minecraft с комфортом<br>и настраивай под себя.</p></div></div>
-<div><div class=lbl><i class=pi data-i=cube></i>Выбор сборки</div><div class=dd id=dd><button class="ddb glass" id=ddb><span id=ddi></span><span id=ddt>Выберите версию</span><i class=pi data-i=chev></i></button>
-<div class=ddm id=ddm><div class=seg2 id=seg2><i class=ind2 id=ind2></i><button class=on data-s=0>Сборки модов</button><button data-s=1>Установленные версии</button></div>
-<div class=ddw><div class=ddr id=ddr><div class=ddl id=l-inst></div><div class=ddl id=l-ver></div></div></div></div></div></div></div>
-<div class="skincard glass"><div class=sch><i class=pi data-i=shirt></i>Текущий скин<button class=ib id=skrf title="Обновить"><i class=pi data-i=refresh></i></button></div>
-<div class=scv><button class=ib id=skp><i class=pi data-i=l></i></button><canvas id=hv width=420 height=580></canvas><button class=ib id=skn><i class=pi data-i=r></i></button></div><div class=plat></div><div id=skname class=mut style="margin-top:10px"></div></div></div><div class=quick><button class=qb id=qshot data-tip="Скриншоты"><i class=pi data-i=camera></i></button><button class=qb id=qtg data-tip="Новости в телеграм"><i class=pi data-i=tg></i></button><button class="qb wide" id=qcat data-tip="Каталог модов, карт и сборок"><i class=pi data-i=catalog></i><span>Каталог</span></button></div></section>
+<section class="news glass" id=news aria-label="Последние новости Minecraft"><div class=nhead><i class="pi nhi" data-i=news></i><b class=nht>Последние новости Minecraft</b>
+<button class=nbt id=nrf data-tip="Обновить"><i class=pi data-i=refresh></i></button><button class="nbt nar" id=nar data-tip="Скрыть новости"><i class=pi data-i=r></i></button></div>
+<div class=nin><div class=nlist id=nlist></div></div><i class="nrs nrs-e" data-r=e></i><i class="nrs nrs-s" data-r=s></i><i class="nrs nrs-se" data-r=se title="Потяните, чтобы изменить размер"></i></section></div>
+<div class=rcol><div class="skincard glass" id=skcard><div class=skst>
+<div class=skpn id=skpn1><div class=sch><i class=pi data-i=shirt></i>Текущий скин<button class=ib id=skrf title="Обновить"><i class=pi data-i=refresh></i></button></div>
+<div class=scv><button class=ib id=skp><i class=pi data-i=l></i></button><canvas id=hv width=420 height=580></canvas><button class=ib id=skn><i class=pi data-i=r></i></button></div><div class=plat></div><div id=skname class=mut></div></div>
+<div class=skpn id=ddm><div class=seg2 id=seg2><i class=ind2 id=ind2></i><button class=on data-s=0>Сборки модов</button><button data-s=1>Установленные версии</button></div>
+<div class=ddw><div class=ddr id=ddr><div class=ddl id=l-inst></div><div class=ddl id=l-ver></div></div></div></div>
+</div></div>
+<div class=dd id=dd><button class="ddb glass" id=ddb><span id=ddi></span><span id=ddt>Выберите версию</span><i class=pi data-i=chev></i></button></div></div>
+<div class=quick><button class=qb id=qshot data-tip="Скриншоты"><i class=pi data-i=camera></i></button><button class=qb id=qtg data-tip="Новости в телеграм"><i class=pi data-i=tg></i></button><button class="qb qai" id=qai data-tip="Бурмалдец — соберёт сборку за вас"><i class=pi data-i=ai></i></button></div></div></section>
 <section class=page id=p-dl><div class=dlg><aside class="side glass"><div class=sh><i class=pi data-i=cube></i>Фильтры</div>
 <button class="fi on" data-f=all><i class=pi data-i=grid></i>Все<em id=c-all>0</em></button><button class=fi data-f=inst><i class=pi data-i=check></i>Установленные<em id=c-in>0</em></button><button class=fi data-f=not><i class=pi data-i=x></i>Не установленные<em id=c-not>0</em></button>
 <label class="f mut" style="padding:8px 6px"><span class=sw><input type=checkbox id=snap><i></i></span>Snapshot, alpha, beta</label>
 <div class="hint glass"><img src=assets/icons/sword.png alt=""><span>Выберите версию Minecraft и нужный загрузчик, затем нажмите «Установить». Моды ставятся в сборки (вкладка «Сборки»).</span></div></aside>
 <div><div class="search glass"><i class=pi data-i=search></i><input id=q class=bare placeholder="Поиск версий…"></div><div id=vl></div></div></div></section>
-<section class=page id=p-bl><div class="card glass"><div class=lbl><img class=lic src=assets/icons/bookshelf.png alt="">Новая сборка для модов</div><div class=f><input id=bn class=in placeholder="Название сборки" maxlength=40><select id=bv class=in></select>
-<select id=bk class=in><option value=fabric>Fabric<option value=forge>Forge<option value=neoforge>NeoForge</select><button class=btn id=bc>Создать</button></div><p id=be class=err></p></div>
-<div class="card glass" id=bi></div>
-<div class="card glass" id=bm hidden><div class=f><b id=bt2 style="font-size:17px"></b><span class=seg data-kind=mods>Моды</span><span class=seg data-kind=resourcepacks>Ресурс-паки</span><span class=seg data-kind=shaderpacks>Шейдеры</span><span class=seg data-kind=archive>Архив</span><span class=seg data-kind=saves>Карты</span>
-<button class="btn ghost sm" id=addb><i class=pi data-i=plus></i>Добавить</button><button class="btn ghost sm" id=addd><i class=pi data-i=folder></i>Папка</button><button class="btn ghost sm" id=snb>Точка восстановления</button><button class="btn sm" id=boostb><i class=pi data-i=bolt></i>Буст FPS</button><button class="btn ghost sm" id=opnb><i class=pi data-i=folder></i>Папка</button></div>
-<p class=mut id=bh></p><select id=mf class=in><option value=all>Все<option value=on>Включённые<option value=off>Выключенные<option value=warn>С предупреждениями<option value=fabric>Fabric<option value=forge>Forge<option value=neoforge>NeoForge</select><div id=bf2></div><div id=bs></div></div></section>
+<section class=page id=p-bl><div class=bl2>
+<aside class="bside glass"><div class=bsh><i class=pi data-i=grass></i><b>Сборки</b></div>
+<nav class=bnav id=bnav><button class=on data-f=all><i class=pi data-i=grid></i>Все сборки</button><button data-f=mine><i class=pi data-i=star></i>Мои сборки</button><button data-f=fav><i class=pi data-i=heart></i>Избранные</button><button data-f=snaps><i class=pi data-i=history></i>Резервные копии</button></nav>
+<div class=bsl id=bsl></div></aside>
+<div class=bmain id=bmain>
+<p id=be class=err style="margin:0"></p>
+<div id=bview class=bview>
+<div class="bcard glass" id=bcard></div>
+<div class=aseg id=btabs></div>
+<div class=bbody><div class=bcol>
+<div class="btable glass" id=btable><div class=btool><input id=bq class=in placeholder="Поиск по названию…"><select id=bfl class=in><option value=all>Все<option value=on>Включённые<option value=off>Выключенные<option value=warn>С предупреждениями</select><span class=grow></span><button class="btn ghost sm" id=addb><i class=pi data-i=plus></i>Добавить</button><button class="btn ghost sm" id=addd><i class=pi data-i=folder></i>Папка</button></div>
+<div class=bbulk id=bbulk hidden></div><div class=bth id=bth></div><div class=btrows id=btrows></div></div><div class="btable glass" id=bsm hidden></div></div>
+</div></div>
+<div id=ball class=ball hidden></div></div></div></section>
+<section class=page id=p-cat><div class="catp glass"><div class=f style="flex-wrap:nowrap;margin-top:0;align-items:stretch"><b class=cth><i class=pi data-i=catalog></i>Каталог</b>
+<div class=cbs id=cbs><button class=cbsb id=cbsb><span class=cbsi id=cbsi></span><span class=cbst><small>Скачивать в сборку</small><b id=cbsn>Выберите сборку</b></span><i class=pi data-i=chev></i></button><div class=cbsm id=cbsm></div></div>
+<span class=grow></span><button class="btn ghost sm" id=catrf title="Обновить список и вернуться в начало"><i class=pi data-i=refresh></i>Обновить</button></div>
+<div class=f><input id=catq class=in placeholder="Поиск по названию…" style="flex:1;min-width:180px"><select id=catv class=in></select><select id=catl class=in><option value="">Любой загрузчик<option value=forge>Forge<option value=fabric>Fabric<option value=neoforge>NeoForge<option value=quilt>Quilt</select><select id=cats class=in><option value=pop>По популярности<option value=new>По новизне</select></div>
+<div class=f id=catmc hidden style="margin-top:0"></div>
+<div class=catb id=catb><div id=catg class=cg></div><div class=f style="justify-content:center"><button class="btn ghost" id=catmore hidden>Показать ещё</button></div><div class=catov id=catov></div></div>
+<div class=cdock><div class=aseg id=ctabs></div></div></div></section>
 <section class=page id=p-sk><div class=skg>
 <div class="skview glass"><canvas id=sv></canvas><div class=f style="justify-content:center"><label class="f mut"><span class=sw><input type=checkbox id=ov checked><i></i></span>внешний слой</label><button class="btn ghost sm" id=elysk>Скин для всех (Ely.by)</button><select id=sm class=in><option value=classic>Classic (4 px)<option value=slim>Slim (3 px)</select></div></div>
-<div class="skpanel glass"><div class=seg2 id=skt><i class=ind2></i><button class=on data-s=0>Мои скины</button><button data-s=1>Редактирование</button></div>
+<div class="skpanel glass"><div class="seg2 s3" id=skt><i class=ind2></i><button class=on data-s=0>Мои скины</button><button data-s=1>Редактирование</button><button data-s=2>Каталог</button></div>
 <div class=skw><div class=skr id=skr><div class=skp><div id=sl class=skl></div></div>
 <div class=skp><div class=f><input id=sn2 class=in value="Новый скин" maxlength=40 style="flex:1;min-width:140px"><select id=sb class=in><option value=steve>Основа: Steve<option value=mannequin>Основа: серый манекен<option value=blank>Основа: пустая</select></div>
 <div class=f><button class="btn ghost sm" id=newb>Новый</button><button class="btn ghost sm" id=imp>Импорт (фото)</button><button class="btn sm" id=sav>Сохранить</button><button class="btn ghost sm" id=exp>Экспорт</button><button class="btn ghost sm" id=tpl>Шаблон</button></div>
 <div class=f><span class="seg on" data-tool=pen>Карандаш</span><span class=seg data-tool=er>Ластик</span><span class=seg data-tool=fill>Заливка</span><input type=color id=col value="#d33030"><button class="btn ghost sm" id=undo>Отмена</button><button class="btn ghost sm" id=redo>Повтор</button></div>
-<div id=wrapEd style="max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:14px;display:inline-block;max-width:100%"><canvas id=ed width=64 height=64 style="width:512px;height:512px;image-rendering:pixelated;cursor:crosshair;display:block;background:repeating-conic-gradient(#2a2f45 0 25%,#1b2033 0 50%) 0 0/16px 16px"></canvas></div>
-<p class=mut style="font-size:12px">Колесо над редактором — масштаб. 3D слева: мышь — вращение, колесо — масштаб.</p><p id=sw class=err></p></div></div></div></div></div></section>
+<div id=wrapEd style="max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:14px;display:inline-block;max-width:100%"><div id=edw><canvas id=ed width=64 height=64 style="width:512px;height:512px;image-rendering:pixelated;cursor:crosshair;display:block;background:repeating-conic-gradient(#2a2f45 0 25%,#1b2033 0 50%) 0 0/16px 16px"></canvas><svg id=edg viewBox="0 0 64 64" preserveAspectRatio="none" aria-hidden="true"></svg></div></div>
+<p class=mut style="font-size:12px">Колесо над редактором — масштаб. 3D слева: мышь — вращение, колесо — масштаб.</p><p id=sw class=err></p></div><div class="skp kcp"><div class=kct><div class=kcr><div class="search glass"><i class=pi data-i=search></i><input id=kq class=bare placeholder="Поиск по названию или автору…" maxlength=60 autocomplete=off></div><button class="btn ghost sm" id=kref><i class=pi data-i=refresh></i>Обновить</button></div>
+<div class=kcr><select id=ks class=in title="Сортировка"><option value=pop>Популярные<option value=new>Новые<option value=old>Старые<option value=name>По названию</select><select id=km class=in title="Модель рук"><option value="">Любые руки<option value=classic>Classic (4 px)<option value=slim>Slim (3 px)</select><select id=kp class=in title="Дата создания"><option value="">За всё время<option value=w>За неделю<option value=m>За месяц<option value=y>За год</select><select id=ka class=in title="Автор"><option value="">Все авторы</select>
+<label class="f mut kch"><span class=sw><input type=checkbox id=kh><i></i></span>Скрыть скачанные</label><button class="btn ghost sm" id=kz hidden><i class=pi data-i=x></i>Сбросить</button><span class="mut kcn" id=kcn></span></div></div>
+<div class=kcb id=kcb><div class=kcg id=kcg></div><div class=kcmsg id=kcmsg hidden></div></div></div></div></div></div></div></section>
 <section class=page id=p-st>
-<div class="card glass"><div class=lbl><img class=lic src=assets/icons/redstone-block.png alt="">Память (ОЗУ)</div><div class=set style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class=mut id=ramh></span><span class=ramv id=ramv></span></div><input type=range id=ram></div></div>
-<div class="card glass"><div class=lbl><img class=lic src=assets/icons/terminal.png alt="">Запуск игры</div><div class=f><input data-k=jvmArgs class=in placeholder="аргументы JVM" size=40><input data-k=gameArgs class=in placeholder="аргументы игры" size=24></div>
-<div class=f><input type=number data-k=width class=in placeholder=ширина style="width:110px"> ×<input type=number data-k=height class=in placeholder=высота style="width:110px"><span class=mut>полный экран</span><label class=sw><input type=checkbox data-k=fullscreen><i></i></label></div>
-<div class=f><input data-k=javaPath class=in placeholder="путь к java.exe (пусто = автоматически)" size=52></div></div>
-<div class="card glass"><div class=lbl><i class=pi data-i=refresh></i>Лаунчер</div><div class=set><span>Запускать вместе с Windows</span><label class=sw><input type=checkbox data-k=openAtLogin><i></i></label></div>
-<div class=set><span>Сворачивать при запуске игры и возвращать после выхода</span><label class=sw><input type=checkbox data-k=minimizeOnPlay><i></i></label></div><div class=set><span>Анимации интерфейса</span><label class=sw><input type=checkbox data-k=anim><i></i></label></div></div>
-<div class="card glass"><div class=lbl><i class=pi data-i=grid></i>Внешний вид и ярлык</div><div class=mut style="margin-bottom:8px">Фон главного меню</div><div class=bgp id=bgp></div>
-<div class=set><span>Показывать выбранный скин в игре (для локального аккаунта)</span><label class=sw><input type=checkbox data-k=skinInGame><i></i></label></div>
-<div class=f><button class="btn ghost" id=mklnk>Создать ярлык на рабочем столе</button></div></div>
-<div class="card glass"><div class=lbl><i class=pi data-i=catalog></i>Каталог</div><div class=mut style="margin-bottom:8px">Для поиска и скачивания карт нужен бесплатный API-ключ CurseForge (моды, ресурс-паки, шейдеры, датапаки и сборки идут с Modrinth без ключа).</div><div class=f><input data-k=curseforgeKey type=password class=in placeholder="API-ключ CurseForge" size=46><button class="btn ghost sm" id=cfget>Получить ключ</button></div></div>
-<div class="card glass"><div class=lbl><img class=lic src=assets/icons/tnt.png alt="">Хранилище и файлы</div><div class=mut id=pth></div><div class=f><b id=sz></b><button class="btn ghost sm" id=opn>Открыть папку</button><button class="btn ghost sm" id=cln>Очистить временные файлы</button></div>
-<div class=f><span class=chip data-go="">Корень</span><span class=chip data-go=instances>Сборки</span><span class=chip data-go=minecraft>Minecraft</span><span class=chip data-go=skins>Скины</span><span class=chip data-go=logs>Журналы</span></div><div class=f><span id=fp class=mut></span></div>
+<div class=stg>
+<aside class="stnav glass" id=stnav>
+<button class="fi sti on" data-s=game><i class=pi data-i=gamepad></i><span>Игра</span><b class=stch><i class=pi data-i=r></i></b></button>
+<button class="fi sti" data-s=look><i class=pi data-i=palette></i><span>Кастомизация</span><b class=stch><i class=pi data-i=r></i></b></button>
+<button class="fi sti" data-s=files><i class=pi data-i=files></i><span>Файлы</span><b class=stch><i class=pi data-i=r></i></b></button>
+<button class="fi sti" data-s=keys><i class=pi data-i=key></i><span>API ключи</span><b class=stch><i class=pi data-i=r></i></b></button>
+<button class="fi sti" data-s=upd><i class=pi data-i=refresh></i><span>Обновления</span><b class=stch><i class=pi data-i=r></i></b></button>
+</aside>
+<div class="stmain glass" id=stmain><i class=creeper></i>
+
+<section class="ss on" id=ss-game>
+<div class=sth><i class="pi sthi" data-i=gamepad></i><div><h2>Игра</h2><p>Настройки запуска и производительности игры</p></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=ram></i><div class=srt><b>Выделение памяти ОЗУ</b><small>Укажите, сколько оперативной памяти выделять для Minecraft.</small></div></div>
+<div class=ramc><input type=range id=ram><div class=stp><b id=ramv>4 ГБ</b><span class=stpb><button class=stb id=ramup title="Больше"><i class=pi data-i=chev></i></button><button class=stb id=ramdn title="Меньше"><i class=pi data-i=chev></i></button></span></div></div>
+<div class=srf><span class=mut id=ramh></span><span class=warn id=ramw></span></div></div>
+<div class=sr><i class="pi sri" data-i=eyeoff></i><div class=srt><b>Скрывать окно лаунчера после захода в игру</b><small>Лаунчер будет свёрнут, пока вы играете.</small></div><label class=sw><input type=checkbox data-k=minimizeOnPlay><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=winback></i><div class=srt><b>Открывать после выхода из игры</b><small>Лаунчер автоматически откроется, когда игра закроется.</small></div><label class=sw><input type=checkbox data-k=showAfterExit><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=sparkle></i><div class=srt><b>Анимации интерфейса</b><small>Включить плавные анимации в лаунчере.</small></div><label class=sw><input type=checkbox data-k=anim><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=windows></i><div class=srt><b>Запускать лаунчер вместе с Windows</b><small>Лаунчер будет запускаться при старте системы.</small></div><label class=sw><input type=checkbox data-k=openAtLogin><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=user></i><div class=srt><b>Показывать мой скин в игре</b><small>Для локального аккаунта: скин попадает в игру через ресурс-пак.</small></div><label class=sw><input type=checkbox data-k=skinInGame><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=gear></i><div class=srt><b>Общие настройки игры для всех сборок</b><small>Графика, управление, звук и язык, настроенные внутри Minecraft в одной сборке, применяются во всех остальных (ресурс-паки и размер окна у каждой свои).</small></div><label class=sw><input type=checkbox data-k=sharedOptions><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=news></i><div class=srt><b>Переводить новости на русский</b><small>Новости Minecraft приходят на английском. Для перевода их текст отправляется в Google Translate. Если выключить — новости останутся на английском.</small></div><label class=sw><input type=checkbox data-k=newsRu><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=shortcut></i><div class=srt><b>Создать ярлык на рабочем столе</b><small>Добавить ярлык для быстрого запуска лаунчера.</small></div><button class=btn id=mklnk>Создать</button></div>
+<div class=ssh>Дополнительно</div>
+<div class="sr col"><div class=srh><img class=sri src=assets/icons/terminal.png alt=""><div class=srt><b>Аргументы запуска</b><small>Для опытных: параметры Java (JVM) и аргументы самой игры. Опасные параметры блокируются.</small></div></div>
+<div class=sfl><input data-k=jvmArgs class=in placeholder="аргументы JVM, например -XX:+UseG1GC"><input data-k=gameArgs class=in placeholder="аргументы игры"></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=image></i><div class=srt><b>Окно игры</b><small>Размер окна Minecraft в пикселях (пусто — по умолчанию) или полный экран.</small></div><span class=mut>полный экран</span><label class=sw><input type=checkbox data-k=fullscreen><i></i></label></div>
+<div class=sfl><input type=number data-k=width class="in sn" placeholder=ширина><span class=mut>×</span><input type=number data-k=height class="in sn" placeholder=высота></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=cube></i><div class=srt><b>Путь к Java</b><small>Пусто — лаунчер сам скачает и выберет нужную Java. Подходит только java.exe или javaw.exe.</small></div></div>
+<div class=sfl><input data-k=javaPath class=in placeholder="путь к java.exe (пусто = автоматически)"></div></div>
+<div class="sr danger"><i class="pi sri" data-i=trash></i><div class=srt><b>Полный сброс данных лаунчера</b><small>Удаляет ВСЁ: сборки, карты, миры, версии игры, аккаунты, скины и настройки. Лаунчер закроется и откроется заново полностью чистым.</small></div><button class="btn red" id=rstall><i class=pi data-i=trash></i>Сбросить всё</button></div>
+</section>
+
+<section class=ss id=ss-look>
+<div class=sth><i class="pi sthi" data-i=palette></i><div><h2>Кастомизация</h2><p>Настройте внешний вид лаунчера под себя</p></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=image></i><div class=srt><b>Обои главного меню</b><small>Выберите фон для главного меню лаунчера. Свой фон — любое изображение PNG, JPG или WEBP.</small></div></div><div class=wtiles id=bgp></div></div>
+<div class=sr><i class="pi sri" data-i=drop></i><div class=srt><b>Размытие фона</b><small>Добавить размытие на фон в интерфейсе.</small></div><label class=sw><input type=checkbox data-k=bgBlur><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=sun></i><div class=srt><b>Яркость фона</b><small>Настройте яркость фона.</small></div><input type=range id=bgbr min=30 max=130 step=5><b class=pct2 id=bgbv>100%</b></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=brush></i><div class=srt><b>Тема оформления</b><small>Выберите цветовую тему интерфейса — она применяется сразу.</small></div></div>
+<div class=thm id=thm></div><div class=f style="margin:2px 0 0"><label class=thc title="Свой цвет"><input type=color id=thc value="#a64dff"><span>Свой цвет</span></label><button class="btn ghost sm" id=thr>Сбросить на фиолетовый</button></div></div>
+<div class=sr><i class="pi sri" data-i=bell></i><div class=srt><b>Показывать уведомления</b><small>Всплывающие сообщения в нижней части окна. Ошибки показываются всегда.</small></div><label class=sw><input type=checkbox data-k=notify><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=cursor></i><div class=srt><b>Эффект наведения</b><small>Пиксельная полоса при наведении на кнопки и элементы.</small></div><label class=sw><input type=checkbox data-k=hoverFx><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=sparkle></i><div class=srt><b>Анимация переходов</b><small>Плавные анимации между окнами и вкладками.</small></div><label class=sw><input type=checkbox data-k=transFx><i></i></label></div>
+<div class=sr><i class="pi sri" data-i=shirt></i><div class=srt><b>Скинов в ряд в каталоге</b><small>Сколько карточек помещать в один ряд во вкладке «Скин» → «Каталог». Чем больше — тем мельче карточки и рамки.</small></div><div class=pcols><input type=range id=skcols min=2 max=8 step=1><b class=pct2 id=skcolsv>4</b></div></div>
+<div class=sr><i class="pi sri" data-i=sparkle></i><div class=srt><b>Аура у кнопки «Играть»</b><small>Вращающееся свечение вокруг кнопки «Играть». По умолчанию включено.</small></div><label class=sw><input type=checkbox data-k=playAura><i></i></label></div>
+</section>
+
+<section class=ss id=ss-files>
+<div class=sth><i class="pi sthi" data-i=files></i><div><h2>Файлы</h2><p>Папка данных лаунчера и файловый менеджер</p></div></div>
+<div class="sr col"><div class=srh><img class=sri src=assets/icons/tnt.png alt=""><div class=srt><b>Хранилище лаунчера</b><small id=pth></small></div><b id=sz class=pct2></b></div>
+<div class=f style="margin:0"><button class="btn ghost sm" id=opn>Открыть папку</button><button class="btn ghost sm" id=cln>Очистить временные файлы</button></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=files></i><div class=srt><b>Файловый менеджер</b><small>Работает только внутри папки данных лаунчера. Файлы можно перетащить в список.</small></div></div>
+<div class=f style="margin:0"><span class=chip data-go="">Корень</span><span class=chip data-go=instances>Сборки</span><span class=chip data-go=minecraft>Minecraft</span><span class=chip data-go=skins>Скины</span><span class=chip data-go=logs>Журналы</span></div><div class=f style="margin:0"><span id=fp class=mut></span></div>
 <div id=fmp><div class=f><button class="btn ghost sm" id=fup>Вверх</button><button class="btn ghost sm" id=frf>Обновить</button><input id=fn class=in placeholder=имя maxlength=100><button class="btn ghost sm" id=fmk>Новая папка</button><button class="btn ghost sm" id=frn>Переименовать</button><button class="btn ghost sm" id=fcp>Копировать</button><button class="btn ghost sm" id=fct>Вырезать</button><button class="btn ghost sm" id=fps>Вставить</button><button class="btn red sm" id=fdl>Удалить</button></div>
-<div class=f><button class="btn ghost sm" id=faf>Добавить файлы</button><button class="btn ghost sm" id=fad>Добавить папку</button><button class="btn ghost sm" id=fox>Открыть в Проводнике</button><span id=fcb class=mut></span></div><p id=fe class=err></p><div id=fl></div></div><p id=se class=err></p></div><div class="card glass" id=updcard><div class=lbl><img class=lic src=assets/icons/sword.png alt="">Обновления лаунчера</div><div class=f style="justify-content:space-between;flex-wrap:nowrap"><div style="min-width:0"><div>Установленная версия: <b id=updcur>—</b></div><div class=mut>Последняя версия: <b id=updlast>не проверялась</b></div><div id=updmsg class=mut style="min-height:20px"></div></div><button class=btn id=updchk><i class=pi data-i=dl></i>Проверить на обновления</button></div></div>
+<div class=f><button class="btn ghost sm" id=faf>Добавить файлы</button><button class="btn ghost sm" id=fad>Добавить папку</button><button class="btn ghost sm" id=fox>Открыть в Проводнике</button><span id=fcb class=mut></span></div><p id=fe class=err></p><div id=fl class=fl></div></div></div>
+</section>
+
+<section class=ss id=ss-keys>
+<div class=sth><i class="pi sthi" data-i=key></i><div><h2>API ключи</h2><p>Ключи и аккаунты внешних сервисов</p></div></div>
+<div class="sr col"><div class=srh><i class="pi sri" data-i=key></i><div class=srt><b>CurseForge</b><small>Нужен бесплатный ключ для поиска и скачивания карт. Хранится только на этом компьютере.</small></div><span class=tag id=cfst>ключ не задан</span></div>
+<div class=sfl><input data-k=curseforgeKey id=cfkey type=password class=in placeholder="API-ключ CurseForge" autocomplete=off spellcheck=false><button class=ib id=cfeye title="Показать или скрыть ключ"><i class=pi data-i=eye></i></button></div>
+<div class=f style="margin:0"><button class="btn sm" id=cfchk>Проверить ключ</button><button class="btn ghost sm" id=cfget>Получить ключ</button></div></div>
+<div class=sr><img class=sri src=assets/icons/bookshelf.png alt=""><div class=srt><b>Modrinth</b><small>Моды, ресурс-паки, шейдеры, датапаки и сборки скачиваются без ключа.</small></div><span class="tag ok">ключ не нужен</span></div>
+<div class=sr><i class="pi sri" data-i=user></i><div class=srt><b>Ely.by</b><small>Аккаунт для скинов, которые видят другие игроки на серверах с поддержкой Ely.by. Пароль не сохраняется.</small></div><button class="btn ghost sm" id=elyset>Войти</button></div>
+</section>
+
+<section class=ss id=ss-upd>
+<div class=sth><i class="pi sthi" data-i=refresh></i><div><h2>Обновления</h2><p>Версия лаунчера и проверка новых версий</p></div></div>
+<div class=sr id=updcard><img class=sri src=assets/icons/sword.png alt=""><div class=srt><div>Установленная версия: <b id=updcur>—</b></div><div class=mut>Последняя версия: <b id=updlast>не проверялась</b></div><div class=mut id=updat></div><div id=updmsg class=mut style="min-height:20px"></div></div><button class=btn id=updchk><i class=pi data-i=dl></i>Проверить на обновления</button></div>
+<div class=sr><i class="pi sri" data-i=info></i><div class=srt><b>Как это работает</b><small>Лаунчер сам проверяет обновления при каждом запуске. Необязательное обновление можно отложить до трёх раз, затем его нужно установить. Перед установкой лаунчер скачивает архив и проверяет его контрольную сумму.</small></div></div>
+</section>
+
+<p id=se class=err></p>
+</div></div>
 </section>
 </main>
-<footer class=bar id=bar><div class=bi><div id=st-t></div><div class=pr><b id=pct>0%</b><div class=track id=track><i id=fill></i></div></div></div>
-<button class="btn ghost" id=another hidden><i class=pi data-i=plus></i>Открыть ещё одно окно</button><span class=stopw><button class="btn red" id=cancel hidden><i class=pi data-i=x></i>Отмена</button><div class=ctx id=stopm></div></span><button class=btn id=play><i class=pi data-i=play></i> Играть</button><button class="ib" id=folder title="Папка игры" style="width:50px;height:50px"><i class=pi data-i=folder></i></button></footer>
+<footer class=bar id=bar><div class="barp glass"><div class=bi><div id=st-t></div><div class=pr><b id=pct>0%</b><div class=track id=track><i id=fill></i></div></div></div></div>
+<div class=pgrp><button class="btn ghost" id=another hidden><i class=pi data-i=plus></i>Открыть ещё одно окно</button><span class=stopw><button class="btn red" id=cancel hidden><i class=pi data-i=x></i>Отмена</button><div class=ctx id=stopm></div></span><div class=playw><canvas class=aura id=aura-b width=174 height=76></canvas><button class=btn id=play><i class=pi data-i=play></i> Играть</button><canvas class="aura front" id=aura-f width=174 height=76></canvas></div></div></footer>
+<div class=modal id=diagm><div class="askp glass depp diagp"><b class=dept id=diagt></b><p class=mut id=diagd></p><div class=diagx id=diagx></div><ul id=diagl class=depl></ul><p id=diagn class=diagn hidden></p><p id=diage class=err hidden></p><div class="f diagb" id=diagb></div></div></div>
+<div class=modal id=depm><div class="askp glass depp"><b class=dept>Игре не хватает модов</b><p class=mut id=depd></p><ul id=depl class=depl></ul><p id=depe class=err hidden></p><div class=f style="justify-content:center"><button class=btn id=depok></button><button class="btn ghost" id=depno>Закрыть</button></div></div></div>
 <div class=modal id=askm><div class="askp glass"><p id=askt></p><div class=f style="justify-content:center"><button class=btn id=askok></button><button class="btn ghost" id=askno></button></div></div></div>
 <div class=modal id=shm><div class="shotp glass"><div class=f style="flex-wrap:nowrap"><b style="font-size:20px;display:flex;gap:10px;align-items:center;white-space:nowrap"><i class=pi data-i=camera></i>Скриншоты</b><input id=shq class=in placeholder="Поиск по названию или дате…" style="flex:1;min-width:120px"><input type=date id=shd class=in title="Показать за день"><button class=wbtn id=shx><i class=pi data-i=x></i></button></div>
 <div class=shbody id=shbody><div id=sg class=sg></div></div></div></div>
 <div class="modal lb" id=lb><button class="ib lbn lbp" id=lbp><i class=pi data-i=l></i></button><div class=lbm><img id=lbi alt=""><div id=lbc class=mut></div></div><button class="ib lbn lbr" id=lbr><i class=pi data-i=r></i></button><button class="wbtn lbx" id=lbx><i class=pi data-i=x></i></button></div>
-<div class=modal id=catm><div class="catp glass"><div class=f style="flex-wrap:nowrap"><b class=cth><i class=pi data-i=catalog></i>Каталог</b><div class=f id=ctabs style="flex:1;margin:0;gap:6px"></div><button class=wbtn id=catx><i class=pi data-i=x></i></button></div>
-<div class=f><input id=catq class=in placeholder="Поиск по названию…" style="flex:1;min-width:180px"><select id=catv class=in></select><select id=catl class=in><option value="">Любой загрузчик<option value=forge>Forge<option value=fabric>Fabric<option value=neoforge>NeoForge<option value=quilt>Quilt</select><select id=cats class=in><option value=pop>По популярности<option value=new>По новизне</select></div>
-<div class=f id=catmc hidden style="margin-top:0"></div>
-<div class=catb id=catb><div id=catg class=cg></div><div class=f style="justify-content:center"><button class="btn ghost" id=catmore hidden>Показать ещё</button></div><div class=catov id=catov></div></div></div></div>
 <div class=modal id=catd><div class="catp cdp glass"><button class=wbtn id=catdx style="position:absolute;top:14px;right:14px"><i class=pi data-i=x></i></button><div id=catdb class=catdb></div></div></div>
 <div class=modal id=pickm><div class="askp glass" style="text-align:left"><b style="font-size:18px" id=pickt>Выберите сборку</b><div id=pickl style="margin:12px 0;max-height:300px;overflow:auto"></div><div class=f style="justify-content:center"><button class="btn ghost" id=pickx><i class=pi data-i=x></i>Отмена</button></div></div></div>
-<div class=modal id=busym><div class="askp glass"><p id=busyt>Подождите…</p><div class=track><i id=busyf style="width:100%"></i></div></div></div>
 <div class=modal id=elym><div class="askp glass" style="text-align:left"><b style="font-size:18px">Вход через Ely.by</b><p class=mut style="margin:6px 0 12px">Скин с Ely.by виден другим игрокам на серверах с поддержкой Ely.by. Пароль не сохраняется — лаунчер хранит только токен в зашифрованном виде.</p>
 <input id=elyu class=in placeholder="Логин или e-mail" style="width:100%;margin-bottom:8px"><input id=elyp type=password class=in placeholder="Пароль" style="width:100%;margin-bottom:8px"><input id=elyt class=in placeholder="Код двухфакторной защиты" hidden style="width:100%;margin-bottom:8px">
 <p id=elye class=err></p><div class=f style="justify-content:center"><button class=btn id=elygo><i class=pi data-i=check></i>Войти</button><button class="btn ghost" id=elyx><i class=pi data-i=x></i>Отмена</button></div></div></div>
@@ -82,9 +162,48 @@
 <div id=updpr hidden><div class=pr><b id=updpct>0%</b><div class=track><i id=updfill></i></div></div><div id=updst class=mut style="min-height:20px"></div></div>
 <p id=upde class=err></p>
 <div class=f style="justify-content:flex-end;margin:0"><button class="btn ghost" id=updlater>Позже</button><button class=btn id=updgo><i class=pi data-i=dl></i>Обновить</button></div></div></div>
+<div class=dm id=dm hidden>
+<div class="dmp glass" id=dmp><div class=dmh><i class="pi dmi" id=dmi></i><div class=dmt><b id=dmt>Скачивание</b><small id=dmsub></small></div><span class=dmbs><button class="ib dmb" id=dmpause data-tip="Пауза"><i class=pi data-i=pause></i></button><button class="ib dmb" id=dmmin data-tip="Свернуть"><i class=pi data-i=min></i></button><button class="ib dmb dmx" id=dmcancel data-tip="Отменить загрузку"><i class=pi data-i=x></i></button></span></div>
+<div class=pr><b id=dmpct>0%</b><div class=track id=dmtrack><i id=dmfill></i></div></div>
+<div class=dmf><span id=dmfiles></span><span id=dmspeed></span></div></div>
+<button class="dmmini glass" id=dmmini hidden data-tip="Развернуть"><i class="pi dmi" id=dmmi></i><span id=dmml>Скачивание</span></button></div>
+<div class=modal id=skm><div class="skdp glass"><button class=wbtn id=skmx title="Закрыть" style="position:absolute;top:14px;right:14px;z-index:3"><i class=pi data-i=x></i></button>
+<div class=skdv><div class=skdc><canvas id=skmc></canvas><span class=kcsk></span></div><div class="mut skdh">Потяните, чтобы покрутить · колесо — масштаб</div><label class="f mut" style="margin:0;justify-content:center"><span class=sw><input type=checkbox id=skmov checked><i></i></span>внешний слой</label></div>
+<div class=skdi><h2 id=skmn></h2><div class=skda id=skma></div><div class=skdg id=skmg></div><p class=skdd id=skmd></p><div class=f style="margin:auto 0 0"><button class=btn id=skmdl></button><button class="btn ghost" id=skmuse hidden><i class=pi data-i=check></i>Применить</button></div></div></div></div>
+<div class=modal id=newsm><div class="catp ndp glass"><button class=wbtn id=newsx title="Закрыть" style="position:absolute;top:14px;right:14px;z-index:3"><i class=pi data-i=x></i></button><div id=newsb class=newsb></div></div></div>
+<div class=modal id=busym><div class="askp glass"><p id=busyt>Подождите…</p><div class="track ind"><i id=busyf style="width:100%"></i></div></div></div>
+<div class=modal id=errm><div class="winp glass errp"><div class=wh><i class=pi data-i=warn></i><b>Последние ошибки</b><span class=grow></span><button class="btn ghost sm" id=errclr><i class=pi data-i=trash></i>Очистить</button><button class=wbtn id=errx><i class=pi data-i=x></i></button></div><p class=mut style="margin:0" id=errsub></p><div class=errl id=errl></div></div></div>
+<div class=modal id=chkm><div class="winp glass errp"><div class=wh><i class=pi data-i=check></i><b id=chkt>Проверка сборки</b><span class=grow></span><button class=wbtn id=chkx><i class=pi data-i=x></i></button></div><p class=mut style="margin:0" id=chksub></p><div class=errl id=chkl></div></div></div>
+<div class=modal id=txtm><div class="askp glass"><p id=txtt style="margin:0 0 10px"></p><input class=in id=txti maxlength=40 style="width:100%"><div class=f style="justify-content:center;margin:14px 0 0"><button class=btn id=txtok><i class=pi data-i=check></i>Готово</button><button class="btn ghost" id=txtno><i class=pi data-i=x></i>Отмена</button></div></div></div>
+<div class=modal id=cbm><div class="winp glass cbp"><div class=wh><i class=pi data-i=plus></i><b>Создать сборку</b><span class=grow></span><button class=wbtn id=cbx title="Закрыть"><i class=pi data-i=x></i></button></div>
+<div class="seg2 cbseg" id=cbseg><i class=ind2></i><button class=on data-s=0>Новая сборка</button><button data-s=1>По коду от друга</button></div>
+<div id=cbnew class=cbpane><label class=fld><span>Название</span><input id=bn class=in placeholder="Например: SkyBlock" maxlength=40></label>
+<div class=cbrow><label class=fld><span>Версия Minecraft</span><select id=bv class=in></select></label><label class=fld><span>Загрузчик</span><select id=bk class=in><option value=fabric>Fabric<option value=forge>Forge<option value=neoforge>NeoForge<option value=vanilla>Vanilla (без модов)</select></label></div>
+<small class=mut>Моды, ресурс-паки и шейдеры добавляются потом: во вкладке «Каталог» или перетаскиванием файлов.</small></div>
+<div id=cbcode class=cbpane hidden><label class=fld><span>Код сборки</span><textarea id=bcode class="in cbta" rows=3 placeholder="Вставьте код, который прислал друг (он начинается с TB1-)" spellcheck=false></textarea></label>
+<div id=bcinfo class=bcinfo hidden></div><label class=fld id=bcnl hidden><span>Название сборки у вас</span><input id=bcn class=in maxlength=40></label>
+<small class=mut>Лаунчер скачает те же версии модов, ресурс-паков и шейдеров из каталога. Для этого нужен интернет.</small></div>
+<p id=cbe class=err style="margin:0"></p>
+<div class=f style="justify-content:flex-end;margin:0"><button class="btn ghost" id=cbno><i class=pi data-i=x></i>Отмена</button><button class="btn bpri" id=bc><i class=pi data-i=plus></i>Создать</button></div></div></div>
+<div class=modal id=shrm><div class="winp glass cbp"><div class=wh><i class=pi data-i=chest></i><b id=shrt>Поделиться сборкой</b><span class=grow></span><button class=wbtn id=shrx title="Закрыть"><i class=pi data-i=x></i></button></div>
+<p class=mut style="margin:0" id=shrs>Отправьте этот код другу. В лаунчере он выберет «Создать сборку → По коду от друга» и получит вашу сборку.</p>
+<textarea id=shrc class="in cbta cbcode" rows=4 readonly spellcheck=false></textarea>
+<div id=shri class=bcinfo></div><p id=shrw class="warn cbw" hidden></p><p id=shre class=err style="margin:0"></p>
+<div class=f style="justify-content:flex-end;margin:0"><button class="btn ghost" id=shrno><i class=pi data-i=x></i>Закрыть</button><button class="btn bpri" id=shrcp><i class=pi data-i=copy></i>Скопировать код</button></div></div></div>
+<div class=fmenu id=fmenu></div>
 <div class=toast id=toast></div>
-<div class=login id=login><div class="lc glass"><img src=assets/icons/sword.png alt=""><div class=brand>Totem<b>Launcher</b></div><p>Выберите способ входа</p>
+<div class=fabdock id=fabdock><button class="btn bpri bcreate" id=bcreate><i class=pi data-i=plus></i>Создать сборку</button><button class=aifab id=aifab data-tip="Открыть чат с Бурмалдецем"><i class=pi data-i=ai></i><span class=aift><b>Бурмалдец</b><small>ИИ соберёт сборку за вас</small></span><em class=aibadge>ИИ</em><span class=aipx aria-hidden=true><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></button></div>
+<button class=aitab id=aitab data-tip="Развернуть чат"><i class=pi data-i=l></i><span>Бурмалдец</span></button>
+<aside class="aip glass" id=aip aria-label="Чат с Бурмалдецем">
+<div class=aihd><span class=aiav><img src=assets/totem.png alt=""></span><div class=ait><b>Бурмалдец</b><small>Собираю сборки Minecraft</small></div>
+<span class=aibs><button class=aib id=ainew data-tip="Новый чат"><i class=pi data-i=plus></i></button><button class=aib id=aihis data-tip="История чатов"><i class=pi data-i=history></i></button><button class=aib id=aimin data-tip="Свернуть"><i class=pi data-i=r></i></button><button class="aib aix" id=aix data-tip="Закрыть"><i class=pi data-i=x></i></button></span></div>
+<div class=aibody><div class=aimsgs id=aimsgs></div>
+<div class=aihist id=aihist><div class=aihh><b>История чатов</b><button class="btn ghost sm" id=aihclr>Очистить всё</button></div><div class=aihl id=aihl></div></div></div>
+<div class=aicomp><textarea id=aiin rows=1 maxlength=2000 placeholder="Например: хоррор на Forge, 50 модов" spellcheck=false></textarea><button class=aisb id=aisend data-tip="Отправить"><i class=pi data-i=send></i></button></div>
+</aside>
+
+<div class="login off" id=login><div class="lc glass"><img src=assets/icons/sword.png alt=""><div class=brand><span class=bname>Totem <b>Launcher</b></span></div><p>Выберите способ входа</p>
 <div id=lc1><button class="btn ghost" disabled><i class=pi data-i=lock></i> Войти через Microsoft — пока недоступно</button><button class="btn ghost" id=lely><i class=pi data-i=user></i> Аккаунт Ely.by</button><button class=btn id=lloc><i class=pi data-i=user></i> Локальный аккаунт</button></div>
 <div id=lc2 hidden><input id=lnick class=in maxlength=15 placeholder="Ваш ник (до 15 символов)" style="width:100%;margin-bottom:12px;font-size:16px"><button class=btn id=lgo>Продолжить</button><button class="btn ghost" id=lbk>Назад</button><p class=err id=lerr style="margin:0"></p></div></div></div>
 </div>
-<script src=icons.js></script><script src=bg.js></script><script src=skin.js></script><script src=app.js></script>
+<script src=theme.js></script><script src=icons.js></script><script src=bg.js></script><script src=aura.js></script><script src=skin.js></script><script src=app.js></script><script src=news.js></script><script src=skincat.js></script><script src=chat.js></script><script src=deps.js></script><script src=diag.js></script>

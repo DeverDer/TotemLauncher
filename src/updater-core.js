@@ -22,6 +22,8 @@ const repoOk = (r) => REPO_RE.test(String(r || '')) && String(r).toUpperCase() !
 const badRel = (r) => { const p = String(r); return !p || p.includes('\0') || /^[\\/]|^[A-Za-z]:|:/.test(p) || p.split(/[\\/]/).some((x) => x === '..' || /^(con|prn|aux|nul|com\d|lpt\d)(\..*)?$/i.test(x) || /[. ]$/.test(x) && x !== '.'); };
 const within = (root, p) => { const r = path.resolve(root), q = path.resolve(p); return q === r || q.startsWith(r + path.sep); };
 
+// текст релиза для пользователя: без ссылок и служебных строк («Full Changelog», «by @user in https://…»)
+const cleanNotes = (t) => String(t || '').split(/\r?\n/).filter((l) => !/https?:\/\/|github|full changelog|what's changed/i.test(l)).map((l) => l.replace(/\s+by @\S+.*$/i, '').trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1500);
 // ---------- GitHub: последний релиз ----------
 const anySignal = (...s) => AbortSignal.any(s.filter(Boolean));
 async function latest(repo, o = {}) {
@@ -40,7 +42,7 @@ async function latest(repo, o = {}) {
   if (!(url.toLowerCase().startsWith(base) || (o.local && url.startsWith('http://127.0.0.1')))) throw new Error('Недопустимая ссылка на файл обновления');
   let sha = /^sha256:([0-9a-f]{64})$/i.exec(String(a.digest || ''))?.[1]?.toLowerCase() || null; // GitHub сам считает digest для загруженных файлов
   if (!sha) { const s = (j.assets || []).find((x) => x.name === a.name + '.sha256'); if (s) { try { const t = await (await f(s.browser_download_url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(15000) })).text(); sha = /^[0-9a-f]{64}/i.exec(t.trim())?.[0]?.toLowerCase() || null; } catch {} } }
-  return { version, tag: j.tag_name, name: a.name, url, size: a.size | 0, sha256: sha, notes: String(j.body || '').slice(0, 1500), page: String(j.html_url || '') };
+  return { version, tag: j.tag_name, name: a.name, url, size: a.size | 0, sha256: sha, notes: cleanNotes(j.body), page: String(j.html_url || '') };
 }
 
 // ---------- скачивание ----------
@@ -62,7 +64,8 @@ async function download(info, dest, o = {}) {
       if (h.digest('hex') !== info.sha256) throw Object.assign(new Error('контрольная сумма SHA-256 не совпала — файл повреждён или подменён'), { http: true });
       fs.renameSync(part, dest); return dest;
     } catch (e) {
-      clearTimeout(tm); out?.destroy(); try { fs.unlinkSync(part); } catch {}
+      clearTimeout(tm); if (out && !out.closed) await new Promise((res) => { out.once('close', res); out.destroy(); setTimeout(res, 800); });
+      try { fs.unlinkSync(part); } catch {}
       if (o.signal?.aborted) throw new Error('cancelled'); last = e; if (e.http && !/HTTP 5\d\d/.test(e.message)) break; await sleep(700 * a);
     }
   }
@@ -158,4 +161,4 @@ function updateShortcuts(app, shell, target) { // после обновлени�
   if (process.platform !== 'win32') return 0; let n = 0; for (const l of Object.values(shortcutPaths(app))) if (fs.existsSync(l) && writeShortcut(shell, l, target, 'replace')) n++; return n;
 }
 
-module.exports = { EXE, parseVer, cmp, repoOk, badRel, within, latest, download, extractZip, zipIndex, localDataDir, defaultRoot, appDirOf, readInstall, writeInstall, pickRoot, cleanupOld, freeBytes, fmtMb, makeShortcuts, updateShortcuts, shortcutPaths };
+module.exports = { cleanNotes, EXE, parseVer, cmp, repoOk, badRel, within, latest, download, extractZip, zipIndex, localDataDir, defaultRoot, appDirOf, readInstall, writeInstall, pickRoot, cleanupOld, freeBytes, fmtMb, makeShortcuts, updateShortcuts, shortcutPaths };

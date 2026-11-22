@@ -16,12 +16,12 @@ class Skins {
   }
   static readImage(p) { if (fs.statSync(p).size > 8 << 20) throw new Error('Файл больше 8 МБ'); const b = fs.readFileSync(p); return { mime: Skins.sniff(b), data: b.toString('base64') }; }
   static read(p) { if (fs.statSync(p).size > 1 << 20) throw new Error('Файл слишком большой'); const b = fs.readFileSync(p); Skins.check(b); return b; }
-  put({ id, name, model, data }) {
+  put({ id, name, model, data, from }) {
     const b = Buffer.from(String(data), 'base64'); Skins.check(b);
     name = String(name || '').trim().slice(0, 40) || 'Скин'; model = model === 'slim' ? 'slim' : 'classic';
     const all = this.all(); let e = /^[0-9a-f]{12}$/.test(id || '') ? all.find((s) => s.id === id) : null;
     if (!e) { e = { id: crypto.randomBytes(6).toString('hex') }; all.push(e); }
-    Object.assign(e, { name, model }); fs.mkdirSync(this.dir, { recursive: true }); fs.writeFileSync(path.join(this.dir, e.id + '.png'), b); this.save(all); return e;
+    Object.assign(e, { name, model }); if (/^[A-Za-z0-9_-]{1,40}$/.test(String(from || '')) && !e.from) e.from = String(from); fs.mkdirSync(this.dir, { recursive: true }); fs.writeFileSync(path.join(this.dir, e.id + '.png'), b); this.save(all); return e;
   }
   remove(id) { if (!/^[0-9a-f]{12}$/.test(id)) throw new Error('Неверный id'); try { fs.unlinkSync(path.join(this.dir, id + '.png')); } catch {} this.save(this.all().filter((s) => s.id !== id)); }
 }
