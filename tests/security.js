@@ -62,5 +62,9 @@ const body=(n)=>new Response(Buffer.alloc(n,7)).body;
  meta={version:'9',download_url:'https://github.com/a.jar',checksums:{sha256:'0'.repeat(64)}};await assert.rejects(Ely.ensureAgent(R+'/ely4'),/не совпала/);
  meta={version:'9',download_url:'https://github.com/a.jar',checksums:{sha256:sum}};const jar=await Ely.ensureAgent(R+'/ely5');assert(fs.existsSync(jar));
  fs.writeFileSync(jar,Buffer.concat([Buffer.from('PK'),Buffer.from('EVIL')]));assert.equal(fs.readFileSync(await Ely.ensureAgent(R+'/ely5')).toString(),jarB.toString(),'подменённый кэш перекачан');
+ // размер папки хранилища считается асинхронно и ТОЧНО (раньше параллельные прибавления терялись)
+ {const src=fs.readFileSync(path.join(__dirname,'../src/main.js'),'utf8'),a=src.indexOf('async function dirSizeAsync'),b=src.indexOf('async function sweepAsync');const g={};new Function('fs','path','g',src.slice(a,b).replace('async function dirSizeAsync','g.f = async function')+';')(fs,path,g);
+  const D=R+'/dsz';let exp=0;for(let d=0;d<30;d++){fs.mkdirSync(D+'/a'+d+'/b',{recursive:true});for(let i=0;i<150;i++){const n=1+(i*7+d)%90;fs.writeFileSync(D+'/a'+d+'/f'+i,'x'.repeat(n));exp+=n}fs.writeFileSync(D+'/a'+d+'/b/g','yy');exp+=2}
+  assert.equal(await g.f(D),exp,'размер папки посчитан точно'); }
  console.log('security-tests-ok');
 })().catch((e)=>{console.error(e);process.exit(1)});

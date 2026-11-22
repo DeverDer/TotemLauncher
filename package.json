@@ -1,6 +1,6 @@
 {
  "name": "totem-launcher",
- "version": "0.15.0",
+ "version": "0.17.0",
  "description": "TotemLauncher",
  "main": "src/main.js",
  "scripts": {
@@ -41,7 +41,7 @@
   }
  },
  "dependencies": {
-  "adm-zip": "^0.5.16"
+  "adm-zip": "^0.5.18"
  },
  "author": "TotemLauncher"
 }

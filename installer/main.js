@@ -10,12 +10,21 @@ const net = testMode ? { api: process.env.TOTEM_GITHUB_API, local: true } : {};
 const UI = path.join(__dirname, 'ui'), UI_URL = pathToFileURL(UI + path.sep).href;
 let win = null, repo = '', latest = null, installed = null, ac = null, busy = false, doneInfo = null, createdRoot = null;
 
-function readRepo() { // 1) встроенный в сборку  2) файл totem-repo.txt рядом с установщиком  3) (только тесты) переменная  4) спросим в окне
-  const cands = [];
-  if (testMode && process.env.TOTEM_REPO) cands.push(process.env.TOTEM_REPO);
-  try { cands.push(JSON.parse(fs.readFileSync(path.join(__dirname, 'app-config.json'), 'utf8')).repo); } catch {}
-  try { cands.push(fs.readFileSync(path.join(process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(process.execPath), 'totem-repo.txt'), 'utf8').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '')); } catch {}
-  return cands.map((c) => String(c || '').trim()).find((c) => core.repoOk(c)) || '';
+const DEFAULT_REPO = 'DeverDer/TotemLauncher'; // источник обновлений зашит: пользователь ничего не вводит
+function readRepo() {
+  if (testMode && core.repoOk(process.env.TOTEM_REPO)) return process.env.TOTEM_REPO;
+  try { const r = JSON.parse(fs.readFileSync(path.join(__dirname, 'app-config.json'), 'utf8')).repo; if (core.repoOk(r)) return r; } catch {}
+  return DEFAULT_REPO;
+}
+// тексты ошибок для пользователя установщика — без слов про GitHub, репозитории и релизы
+function neutral(msg) {
+  const m = String(msg || '');
+  if (/Нет связи/i.test(m)) return 'Нет связи с сервером загрузки. Проверьте подключение к интернету и повторите.';
+  if (/ограничил запросы/i.test(m)) return 'Сервер временно ограничил число запросов. Повторите через несколько минут.';
+  if (/нет опубликованных|нет файла|Тег релиза|не настроен|Недопустимая ссылка/i.test(m)) return 'Не найдена доступная версия лаунчера для установки. Попробуйте позже.';
+  if (/HTTP \d+/i.test(m) && /GitHub|Сервер ответил/i.test(m)) return 'Сервер загрузки ответил ошибкой. Повторите позже.';
+  if (/github|репозитор|релиз/i.test(m)) return 'Не удалось получить данные о последней версии. Проверьте интернет и повторите.';
+  return m;
 }
 function createWindow() {
   const wa = screen.getPrimaryDisplay().workArea, w = Math.min(680, wa.width), h = Math.min(640, wa.height);
@@ -30,14 +39,13 @@ const send = (ch, p) => { try { win?.webContents.send(ch, p); } catch {} };
 
 async function lookup() { // последняя версия на GitHub + что уже установлено
   installed = core.readInstall(); repo = repo || readRepo();
-  const out = { repo, configured: core.repoOk(repo), installed: installed ? { version: installed.version, dir: installed.dir } : null, defaultDir: core.pickRoot(core.defaultRoot()), version: app.getVersion() };
+  const out = { configured: true, installed: installed ? { version: installed.version, dir: installed.dir } : null, defaultDir: core.pickRoot(core.defaultRoot()), version: app.getVersion() };
   if (!out.configured) return { ...out, error: '' };
   try { latest = await core.latest(repo, net); out.latest = { version: latest.version, size: latest.size, notes: latest.notes }; out.update = installed ? core.cmp(latest.version, installed.version) > 0 : false; }
-  catch (e) { out.error = e.message; out.net = !!e.net; }
+  catch (e) { out.error = neutral(e.message); out.net = !!e.net; }
   return out;
 }
 handle('i:init', () => lookup());
-handle('i:setRepo', (_e, r) => { r = String(r || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, ''); if (!core.repoOk(r)) return { ok: false, error: 'Укажите репозиторий в виде «владелец/название», например Ivan/TotemLauncher' }; repo = r; return { ok: true }; });
 handle('i:browse', async (_e, cur) => {
   const r = await dialog.showOpenDialog(win, { title: 'Папка для установки TotemLauncher', defaultPath: String(cur || ''), properties: ['openDirectory', 'createDirectory'] });
   return r.canceled || !r.filePaths[0] ? null : core.pickRoot(r.filePaths[0]);
@@ -68,7 +76,7 @@ handle('i:start', async (_e, o) => {
   } catch (e) {
     busy = false; try { if (zip) { fs.unlinkSync(zip + '.part'); } } catch {}
     if (sig.aborted) { if (createdRoot) try { fs.rmSync(createdRoot, { recursive: true, force: true }); } catch {} return { ok: false, cancelled: true }; } // прервали: убираем за собой
-    return { ok: false, error: e.message };
+    return { ok: false, error: neutral(e.message) };
   }
 });
 ipcMain.on('i:cancel', (e) => { if (trusted(e)) ac?.abort(); });
@@ -78,7 +86,6 @@ ipcMain.on('i:finish', (e, launch) => {
   app.quit();
 });
 ipcMain.on('i:close', (e) => { if (trusted(e)) { ac?.abort(); app.quit(); } });
-ipcMain.on('i:logo', (e) => { if (trusted(e)) shell.openExternal('https://github.com/' + repo).catch(() => {}); });
 
 if (!app.requestSingleInstanceLock()) app.quit(); else app.whenReady().then(() => {
   const ses = require('electron').session.defaultSession; ses.setPermissionRequestHandler((_w, _p, cb) => cb(false));

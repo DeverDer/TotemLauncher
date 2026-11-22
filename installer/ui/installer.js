@@ -1,6 +1,6 @@
 const $ = (id) => document.getElementById(id);
 const S = { info: null, dir: '', mode: 'fresh', phase: 'init', conf: 0 };
-const panes = ['pInit', 'pRepo', 'pReady', 'pBusy', 'pDone', 'pErr'];
+const panes = ['pInit', 'pReady', 'pBusy', 'pDone', 'pErr'];
 const show = (p, o = {}) => { S.phase = p; for (const id of panes) $(id).hidden = id !== p; $('optLaunch').hidden = !o.launch; setBtns(o); };
 function setBtns(o) { // две кнопки: «Отмена» и главная; во время установки «Завершить» серая и не нажимается
   $('bCancel').hidden = !!o.noCancel; $('bCancel').disabled = !!o.cancelOff; $('bCancel').textContent = o.cancel || 'Отмена';
@@ -17,7 +17,6 @@ function ready() {
 }
 async function init() {
   show('pInit', { noCancel: false, main: '' }); const i = await inst.init(); S.info = i;
-  if (!i.configured) { show('pRepo', { main: 'Продолжить', act: 'repo' }); return; }
   if (i.error || !i.latest) { $('eMsg').textContent = i.error || 'Не удалось узнать последнюю версию'; show('pErr', { main: 'Повторить', act: 'init', cancel: 'Закрыть' }); return; }
   ready();
 }
@@ -33,7 +32,6 @@ inst.onProgress(prog);
 $('bMain').onclick = async () => {
   const a = $('bMain').dataset.act;
   if (a === 'start') start(); else if (a === 'init') init(); else if (a === 'finish') inst.finish($('cbLaunch').checked);
-  else if (a === 'repo') { const r = await inst.setRepo($('repoIn').value); if (!r.ok) { $('repoErr').textContent = r.error; return; } init(); }
 };
 function cancel() { // во время установки просим подтвердить вторым нажатием
   if (S.phase === 'pBusy') { if (!S.conf) { S.conf = 1; $('bCancel').textContent = 'Точно прервать?'; setTimeout(() => { S.conf = 0; if (S.phase === 'pBusy') $('bCancel').textContent = 'Отмена'; }, 4000); return; } inst.close(); return; }
@@ -41,6 +39,5 @@ function cancel() { // во время установки просим подт�
 }
 $('bCancel').onclick = cancel; $('x1').onclick = cancel;
 $('browse').onclick = async () => { const d = await inst.browse(S.dir); if (d) { S.dir = d; $('folder').value = d; } };
-$('repoIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('bMain').click(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.phase !== 'pBusy') cancel(); });
 init();

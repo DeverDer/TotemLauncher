@@ -34,3 +34,16 @@ r=I.checkCompat(f.id,'saves',[R+'/w1']);assert(r.length===1&&/1\.20\.4/.test(r[0
 // предупреждения в списке модов используют диапазоны, а не точное равенство
 I.add(f.id,'mods',[R+'/ok.jar',R+'/old.jar']);for(const n of ['ok.jar','old.jar'])global.ZIPS[I.dir(f)+'/mods/'+n]=global.ZIPS[R+'/'+n];const L=I.list(f.id,'mods');assert(!L.find(x=>x.name==='ok.jar').warn&&/рассчитан на Minecraft/.test(L.find(x=>x.name==='old.jar').warn));
 console.log('stage12-tests-ok');
+// --- v0.16: ложные «мод не для 1.12.2»
+{const A=require('assert'),C=require('../src/compat.js');
+ A.strictEqual(C.mcSatisfies('1.12','1.12.2',{loose:true}),true,'mcmod.info: «1.12» подходит 1.12.2');
+ A.strictEqual(C.mcSatisfies('1.12.2','1.12.2',{loose:true}),true);
+ A.strictEqual(C.mcSatisfies('1.11.2, 1.12','1.12.2',{loose:true}),true,'список версий');
+ A.strictEqual(C.mcSatisfies('1.11.2','1.12.2',{loose:true}),false,'настоящее несовпадение остаётся ошибкой');
+ A.strictEqual(C.mcSatisfies('1.12','1.12.2'),false,'строго (Fabric): «1.12» — это именно 1.12');
+ A.strictEqual(C.mcSatisfies('${mcversion}','1.12.2',{loose:true}),null,'плейсхолдер сборки — неизвестно, не ошибка');
+ A.strictEqual(C.mcSatisfies('@MCVERSION@','1.12.2'),null);
+ A.strictEqual(C.mcSatisfies(['1.12.x'],'1.12.2',{loose:true}),true);
+ A.strictEqual(C.mcSatisfies('[1.12,1.13)','1.12.2',{loose:true}),true);
+ A.strictEqual(C.mcSatisfies('1.13','1.12.2',{loose:true}),false);
+ console.log('compat-loose-ok');}
